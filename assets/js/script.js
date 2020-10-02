@@ -3,9 +3,11 @@ var tasks = {};
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
+  
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
     .text(taskDate);
+
   var taskP = $("<p>")
     .addClass("m-1")
     .text(taskText);
@@ -71,7 +73,7 @@ $(".list-group").on("blur", "textarea", function() {
   .closest(".list-group-item")
   .index();
 
-  tasks[status][index].text =text;
+  tasks[status][index].text = text;
   saveTasks();
 
   //recreate p element
@@ -128,13 +130,58 @@ $(".list-group").on("blur", "input[type='text']", function(){
 
   // recreate span element with bootstrap classes
   var taskSpan = $("<span>")
-    .addClass("badg badge-primary padge-pill")
+    .addClass("badge badge-primary padge-pill")
     .text(date);
 
   // replace input with span element
   $(this).replaceWith(taskSpan);  
 });
 
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function(event) {
+    console.log("activate", this);
+  },
+  deactivate: function(event) {
+    console.log("deactivate", this);
+  },
+  over: function(event) {
+    console.log("over", event.target);
+  },
+  out: function(event) {
+    console.log("out", event.target);
+  },
+  update: function(event) {
+    var tempArr = [];
+
+    $(this).children().each(function() {
+      var text = $(this)
+        .find("p")
+        .text()
+        .trim();  
+
+      var date = $(this)
+        .find("span")
+        .text()
+        .trim();
+        
+      tempArr.push({
+        text: text,
+        date: date
+      });
+    });
+    
+    var arrName = $(this)
+    .attr("id")
+    .replace("list-", "");
+
+    tasks[arrName] = tempArr;
+    saveTasks();
+  }
+});
 
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
@@ -167,6 +214,21 @@ $("#task-form-modal .btn-primary").click(function() {
     });
 
     saveTasks();
+  }
+});
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+    console.log("drop");
+  },
+  over: function(event, ui) {
+    console.log('over');
+  },
+  out: function(event, ui) {
+    console.log("out");
   }
 });
 
